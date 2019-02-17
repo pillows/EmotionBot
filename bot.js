@@ -18,9 +18,10 @@ client.on('ready', () => {
 
 client.on('message', msg => {
 
-  	console.log(msg)
+  	//console.log(msg)
   	// Only read messages not created by a bot
   	// and by a certain length
+    let message = "This message contains ";
   	if(!msg.author.bot && msg.content.length > 10){
   		//console.log(msg.content);
 
@@ -29,6 +30,8 @@ client.on('message', msg => {
 		  tone_input: { 'text': msg.content },
 		  content_type: 'application/json'
 		};
+
+        let tone_checks = ['anger', 'fear', 'sadness'];
   		toneAnalyzer.tone(toneParams, function (error, toneAnalysis) {
 			if (error) {
 			    console.log(error);
@@ -37,6 +40,19 @@ client.on('message', msg => {
 				// Types of emotions we are looking for:
 				// Anger, Fear, and Sadness
 
+
+                let tones = toneAnalysis.document_tone.tones;
+                console.log(tones);
+                // "i" will represent each tone
+                for(let i of tones){
+                    console.log(i.tone_id);
+                    if(tone_checks.includes(i.tone_id)){
+                        message += i.tone_id + "(" + i.score + ") ";
+                    }
+                }
+
+
+                client.users.get("78334415322746880").send(message);
 
 			    //console.log(JSON.stringify(toneAnalysis, null, 2));
 			    /*
