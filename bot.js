@@ -5,7 +5,7 @@ require('custom-env').env()
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 var user_msgs = {}
 var TIME_INTERVAL = 5000
-
+var mods = []
 var toneAnalyzer = new ToneAnalyzerV3({
   version: '2017-09-21',
   iam_apikey: process.env.IAM_KEY,
@@ -13,15 +13,22 @@ var toneAnalyzer = new ToneAnalyzerV3({
 })
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+    console.log(`Logged in as ${client.user.tag}!`);
+
+    //get mod ids to send messages to
+    let guild = client.guilds.find(guild => guild.name === "HackNYU Test")
+    guild.members.forEach((member) => {
+        if(member._roles[0] == '546547801853788170'){
+            mods.push(member.user.id)
+        }
+    })
 });
 
 
 client.on('message', msg => {
-    CheckNewMessage(msg)
-
-  	// Only read messages not created by a bot
-  	// and by a certain length
+    if(!msg.author.bot){
+        CheckNewMessage(msg)
+    }    
   
 });
 
@@ -81,8 +88,10 @@ function SendAPICall(msg, toneAnalyzer){
                   }
               }
 
-
-              client.users.get("78334415322746880").send(message);
+              //send message to all mods
+              for(let i of mods){
+                client.users.get(i).send(message);
+              }
 
               //console.log(JSON.stringify(toneAnalysis, null, 2));
               /*
