@@ -17,7 +17,7 @@ client.on('ready', () => {
 
 
 client.on('message', msg => {
-  	
+
   	console.log(msg)
   	// Only read messages not created by a bot
   	// and by a certain length
@@ -32,14 +32,14 @@ client.on('message', msg => {
   		toneAnalyzer.tone(toneParams, function (error, toneAnalysis) {
 			if (error) {
 			    console.log(error);
-			} 
-			else { 
+			}
+			else {
 				// Types of emotions we are looking for:
 				// Anger, Fear, and Sadness
 
-				
+
 			    //console.log(JSON.stringify(toneAnalysis, null, 2));
-			    /* 
+			    /*
 			    Sample of output:
 			    {
 				  "document_tone": {
@@ -68,8 +68,8 @@ client.on('message', msg => {
 		});
   	}
     //msg.reply('Pong!');
-    
-  
+
+
 });
 
 client.login(process.env.BOT_KEY);
