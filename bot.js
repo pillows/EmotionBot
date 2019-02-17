@@ -18,7 +18,7 @@ client.on('ready', () => {
     //get mod ids to send messages to
     let guild = client.guilds.find(guild => guild.name === "HackNYU Test")
     guild.members.forEach((member) => {
-        if(member._roles[0] == '546547801853788170'){
+        if(member._roles.includes('546547801853788170')){
             mods.push(member.user.id)
         }
     })
@@ -86,12 +86,15 @@ function SendAPICall(msg, toneAnalyzer){
                   }
               }
 
-              let author = msg.author.username
-              let triggerMessage = user_msgs[msg.author].message
-              //send message to all mods
-              for(let i of mods){
-                client.users.get(i).send(author + " has written a message that triggered an alarm: " + "```"+triggerMessage+"```\n" + "Summary: " +message );
+              if(tones.length > 0){
+                let author = msg.author.username
+                let triggerMessage = user_msgs[msg.author].message
+                //send message to all mods
+                for(let i of mods){
+                    client.users.get(i).send(author + " has written a message that triggered an alarm: " + "```"+triggerMessage+"```\n" + "Summary: " +message );
+                }
               }
+              
 
               //reset message once api call has been made
               user_msgs[msg.author].message = ""
