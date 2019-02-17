@@ -3,9 +3,14 @@ const client = new Discord.Client();
 require('custom-env').env()
 
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
+
+var TIME_INTERVAL = 5000 //how long to consider concat messsages together
+var SERVER_NAME = "HackNYU Test" //change for server name
+var MOD_ROLE = "mod" //adjust for what the name of your role for who to alert is
+
 var user_msgs = {}
-var TIME_INTERVAL = 5000
 var mods = []
+
 var toneAnalyzer = new ToneAnalyzerV3({
   version: '2017-09-21',
   iam_apikey: process.env.IAM_KEY,
@@ -14,11 +19,12 @@ var toneAnalyzer = new ToneAnalyzerV3({
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    let guild = client.guilds.find(guild => guild.name === SERVER_NAME)
+    let mod_id = guild.roles.find(role => role.name == MOD_ROLE).id
 
     //get mod ids to send messages to
-    let guild = client.guilds.find(guild => guild.name === "HackNYU Test")
     guild.members.forEach((member) => {
-        if(member._roles.includes('546547801853788170')){
+        if(member._roles.includes(mod_id)){
             mods.push(member.user.id)
         }
     })
@@ -29,7 +35,6 @@ client.on('message', msg => {
     if(!msg.author.bot){
         CheckNewMessage(msg)
     }
-
 });
 
 function CheckNewMessage(msg){
@@ -40,12 +45,13 @@ function CheckNewMessage(msg){
             timeout: ""
         }
     }else{
+        //concatinate messages together if message sent within 5 seconds of each other
         clearTimeout(user_msgs[msg.author].timeout)
         user_msgs[msg.author].message += " " + msg.content
     }
 
     user_msgs[msg.author].timeout = setTimeout(function(){
-        SendAPICall(msg, toneAnalyzer)
+        CheckMessageEmotion(msg, toneAnalyzer)
     }, TIME_INTERVAL)
 }
 
@@ -53,12 +59,11 @@ function CheckNewUser(msg){
     return user_msgs[msg.author] === undefined
 }
 
-function SendAPICall(msg, toneAnalyzer){
+function CheckMessageEmotion(msg, toneAnalyzer){
     let message = "This message contains ";
 
-    if(!msg.author.bot/* && msg.content.length > 10*/){
+    if(!msg.author.bot){
         console.log("msg:", user_msgs[msg.author].message)
-        //console.log(msg.content);
 
         // msg.content = the raw message sent by the user
         var toneParams = {
@@ -75,18 +80,18 @@ function SendAPICall(msg, toneAnalyzer){
               // Types of emotions we are looking for:
               // Anger, Fear, and Sadness
 
-
               let tones = toneAnalysis.document_tone.tones;
               console.log(tones);
               // "i" will represent each tone
               for(let i of tones){
                   console.log(i.tone_id);
                   if(tone_checks.includes(i.tone_id)){
-                      message += i.tone_id + "(" + i.score + ") ";
+                      message += i.tone_id + "(" + i.score + ") \n";
                   }
               }
 
-              if(tones.length > 0){
+              //check if should alert mods
+              if(message != "This message contains "){
                 let author = msg.author.username
                 let triggerMessage = user_msgs[msg.author].message
                 //send message to all mods
@@ -95,14 +100,11 @@ function SendAPICall(msg, toneAnalyzer){
                 }
               }
               
-
-              //reset message once api call has been made
+              //reset message once api call has been made (so as to not concat older messages)
               user_msgs[msg.author].message = ""
 
-
-              //console.log(JSON.stringify(toneAnalysis, null, 2));
               /*
-              Sample of output:
+              Sample of api output:
               {
                 "document_tone": {
                   "tones": [
@@ -121,37 +123,12 @@ function SendAPICall(msg, toneAnalyzer){
                       "tone_id": "confident",
                       "tone_name": "Confident"
                     }
-                  ]
-  		toneAnalyzer.tone(toneParams, function (error, toneAnalysis) {
-			if (error) {
-			    console.log(error);
-			}
-			else {
-				// Types of emotions we are looking for:
-				// Anger, Fear, and Sadness
-
-
-                let tones = toneAnalysis.document_tone.tones;
-                console.log(tones);
-                // "i" will represent each tone
-                for(let i of tones){
-                    console.log(i.tone_id);
-                    //if(tone_checks.includes(i.tone_id)){
-                        message += i.tone_id + "(" + i.score + ") ";
-                    //}
-                }
+                ]
               }
-            }
             */
           }
       });
     }
 }
-
-// client.login(process.env.BOT_KEY);
-//     //msg.reply('Pong!');
-
-
-// });
 
 client.login(process.env.BOT_KEY);
