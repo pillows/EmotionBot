@@ -28,8 +28,8 @@ client.on('ready', () => {
 client.on('message', msg => {
     if(!msg.author.bot){
         CheckNewMessage(msg)
-    }    
-  
+    }
+
 });
 
 function CheckNewMessage(msg){
@@ -42,12 +42,10 @@ function CheckNewMessage(msg){
     }else{
         clearTimeout(user_msgs[msg.author].timeout)
         user_msgs[msg.author].message += " " + msg.content
-    }  
+    }
 
     user_msgs[msg.author].timeout = setTimeout(function(){
         SendAPICall(msg, toneAnalyzer)
-        user_msgs[msg.author].message = ""
-        
     }, TIME_INTERVAL)
 }
 
@@ -88,10 +86,16 @@ function SendAPICall(msg, toneAnalyzer){
                   }
               }
 
+              let author = msg.author.username
+              let triggerMessage = user_msgs[msg.author].message
               //send message to all mods
               for(let i of mods){
-                client.users.get(i).send(message);
+                client.users.get(i).send(author + " has written a message that triggered an alarm: " + "```"+triggerMessage+"```\n" + "Summary: " +message );
               }
+
+              //reset message once api call has been made
+              user_msgs[msg.author].message = ""
+
 
               //console.log(JSON.stringify(toneAnalysis, null, 2));
               /*
