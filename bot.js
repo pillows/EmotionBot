@@ -5,7 +5,6 @@ require('custom-env').env()
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 var user_msgs = {}
 var TIME_INTERVAL = 5000
-var api_call
 
 var toneAnalyzer = new ToneAnalyzerV3({
   version: '2017-09-21',
@@ -29,15 +28,18 @@ client.on('message', msg => {
 function CheckNewMessage(msg){
     //if "new message"
     if(CheckNewUser(msg)){
-        user_msgs[msg.author] = msg.content
+        user_msgs[msg.author] = {
+            message: msg.content,
+            timeout: ""
+        }
     }else{
-        clearTimeout(api_call)
-        user_msgs[msg.author] += " " + msg.content
+        clearTimeout(user_msgs[msg.author].timeout)
+        user_msgs[msg.author].message += " " + msg.content
     }  
 
-    api_call = setTimeout(function(){
+    user_msgs[msg.author].timeout = setTimeout(function(){
         SendAPICall(msg, toneAnalyzer)
-        user_msgs[msg.author] = ""
+        user_msgs[msg.author].message = ""
         
     }, TIME_INTERVAL)
 }
@@ -50,12 +52,12 @@ function SendAPICall(msg, toneAnalyzer){
     let message = "This message contains ";
 
     if(!msg.author.bot/* && msg.content.length > 10*/){
-        console.log("msg:", user_msgs[msg.author])
+        console.log("msg:", user_msgs[msg.author].message)
         //console.log(msg.content);
 
         // msg.content = the raw message sent by the user
         var toneParams = {
-            tone_input: { 'text': user_msgs[msg.author] },
+            tone_input: { 'text': user_msgs[msg.author].message },
             content_type: 'application/json'
         };
 
