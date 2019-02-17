@@ -104,6 +104,23 @@ function SendAPICall(msg, toneAnalyzer){
                       "tone_name": "Confident"
                     }
                   ]
+  		toneAnalyzer.tone(toneParams, function (error, toneAnalysis) {
+			if (error) {
+			    console.log(error);
+			}
+			else {
+				// Types of emotions we are looking for:
+				// Anger, Fear, and Sadness
+
+
+                let tones = toneAnalysis.document_tone.tones;
+                console.log(tones);
+                // "i" will represent each tone
+                for(let i of tones){
+                    console.log(i.tone_id);
+                    //if(tone_checks.includes(i.tone_id)){
+                        message += i.tone_id + "(" + i.score + ") ";
+                    //}
                 }
               }
             }
