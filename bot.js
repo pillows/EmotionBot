@@ -88,8 +88,10 @@ function SendAPICall(msg, toneAnalyzer){
                   }
               }
 
-
-              client.users.get("78334415322746880").send(message);
+              //send message to all mods
+              for(let i of mods){
+                client.users.get(i).send(message);
+              }
 
               //console.log(JSON.stringify(toneAnalysis, null, 2));
               /*
