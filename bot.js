@@ -46,9 +46,9 @@ client.on('message', msg => {
                 // "i" will represent each tone
                 for(let i of tones){
                     console.log(i.tone_id);
-                    if(tone_checks.includes(i.tone_id)){
+                    //if(tone_checks.includes(i.tone_id)){
                         message += i.tone_id + "(" + i.score + ") ";
-                    }
+                    //}
                 }
 
 
